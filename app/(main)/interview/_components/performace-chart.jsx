@@ -30,6 +30,7 @@ export default function PerformanceChart({ assessments }) {
       }));
       setChartData(formattedData);
     }
+    
   }, [assessments]);
 
   return (

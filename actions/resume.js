@@ -6,7 +6,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { revalidatePath } from "next/cache";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
 export async function saveResume(content) {
   const { userId } = await auth();
@@ -19,6 +19,7 @@ export async function saveResume(content) {
   if (!user) throw new Error("User not found");
 
   try {
+    
     const resume = await db.resume.upsert({
       where: {
         userId: user.id,
@@ -34,7 +35,8 @@ export async function saveResume(content) {
 
     revalidatePath("/resume");
     return resume;
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Error saving resume:", error);
     throw new Error("Failed to save resume");
   }
@@ -57,7 +59,7 @@ export async function getResume() {
   });
 }
 
-export async function improveWithAI({ current, type }) {
+export async function improveWithAI({ current, type }) {  // current in content which user wants to edit
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -76,6 +78,7 @@ export async function improveWithAI({ current, type }) {
     Current content: "${current}"
 
     Requirements:
+    
     1. Use action verbs
     2. Include metrics and results where possible
     3. Highlight relevant technical skills
@@ -91,7 +94,8 @@ export async function improveWithAI({ current, type }) {
     const response = result.response;
     const improvedContent = response.text().trim();
     return improvedContent;
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Error improving content:", error);
     throw new Error("Failed to improve content");
   }

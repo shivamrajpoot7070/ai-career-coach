@@ -6,7 +6,7 @@ import { CardContent, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
 export default function QuizResult({
-  result,
+  result,  // this will take result object from parent component having array `questions` with user answers and correct answers
   hideStartNew = false,
   onStartNew,
 }) {
@@ -33,6 +33,11 @@ export default function QuizResult({
             <p className="text-muted-foreground">{result.improvementTip}</p>
           </div>
         )}
+
+        {/* result will contain questions array with user answers and correct answers */}
+        {/* thats why result.questions is used below */}
+        {/* checlk the schema in the actions/interview.js then save quiz result schema for more details */}
+
 
         {/* Questions Review */}
         <div className="space-y-4">
@@ -62,6 +67,7 @@ export default function QuizResult({
 
       {!hideStartNew && (
         <CardFooter>
+          {/* //on start new will come from parent component(quiz.jsx) to start new quiz */}
           <Button onClick={onStartNew} className="w-full">
             Start New Quiz
           </Button>

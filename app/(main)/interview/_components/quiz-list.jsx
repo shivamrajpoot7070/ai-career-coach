@@ -20,7 +20,9 @@ import {
 import QuizResult from "./quiz-result";
 
 export default function QuizList({ assessments }) {
+  
   const router = useRouter();
+  
   const [selectedQuiz, setSelectedQuiz] = useState(null);
 
   return (
@@ -76,12 +78,16 @@ export default function QuizList({ assessments }) {
         </CardContent>
       </Card>
 
+      {/* // this will show quiz result in dialog when user clicks on any quiz from the list */}
+
       <Dialog open={!!selectedQuiz} onOpenChange={() => setSelectedQuiz(null)}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle></DialogTitle>
           </DialogHeader>
-          <QuizResult
+
+          {/* // this is the component to show quiz result details */}
+          <QuizResult  
             result={selectedQuiz}
             hideStartNew
             onStartNew={() => router.push("/interview/mock")}

@@ -18,9 +18,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 import { checkUser } from "@/lib/checkUser";
+import { getUserOnboardingStatus } from "@/actions/dashboard";
+import { redirect } from "next/dist/server/api-utils";
 
 export default async function Header() {
-  await checkUser();
+
+   await checkUser(); // ensure user exists in the database then move on to render the header
+   // this function checks if the user exists in the database, if not it creates a new user
 
   return (
     <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-50 supports-[backdrop-filter]:bg-background/60">
@@ -95,6 +99,7 @@ export default async function Header() {
             </SignInButton>
           </SignedOut>
 
+          {/* this is user button for profle and sign out */}
           <SignedIn>
             <UserButton
               appearance={{

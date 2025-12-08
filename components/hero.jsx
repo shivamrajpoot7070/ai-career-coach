@@ -7,11 +7,16 @@ import Link from "next/link";
 
 const HeroSection = () => {
 
-  const imageRef = useRef(null);
+
+  const imageRef = useRef(null);  // used in the image to target the image section on direct
+  // client page bcoz using hooks
+
+  // this is for image scroll animation
+
 
   useEffect(() => {
 
-    const imageElement = imageRef.current;
+    const imageElement = imageRef.current; // take the current image element
 
     const handleScroll = () => {
 

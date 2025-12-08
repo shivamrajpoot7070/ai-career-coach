@@ -26,6 +26,7 @@ import { resumeSchema } from "@/app/lib/schema";
 import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
 
 export default function ResumeBuilder({ initialContent }) {
+
   const [activeTab, setActiveTab] = useState("edit");
   const [previewContent, setPreviewContent] = useState(initialContent);
   const { user } = useUser();
@@ -97,6 +98,7 @@ export default function ResumeBuilder({ initialContent }) {
   };
 
   const getCombinedContent = () => {
+
     const { summary, skills, experience, education, projects } = formValues;
     return [
       getContactMarkdown(),
@@ -118,19 +120,23 @@ export default function ResumeBuilder({ initialContent }) {
       const element = document.getElementById("resume-pdf");
       const opt = {
         margin: [15, 15],
-        filename: "resume.pdf",
+        filename: `${user.fullName.replace(/\s+/g, "_")}_Resume.pdf`,
         image: { type: "jpeg", quality: 0.98 },
         html2canvas: { scale: 2 },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       };
 
       await html2pdf().set(opt).from(element).save();
-    } catch (error) {
+    } 
+    catch (error) {
       console.error("PDF generation error:", error);
-    } finally {
+    } 
+    finally {
       setIsGenerating(false);
     }
   };
+
+  // Handle form submission to save resume
 
   const onSubmit = async (data) => {
     try {
@@ -141,7 +147,8 @@ export default function ResumeBuilder({ initialContent }) {
 
       console.log(previewContent, formattedContent);
       await saveResumeFn(previewContent);
-    } catch (error) {
+    }
+     catch (error) {
       console.error("Save error:", error);
     }
   };
@@ -204,7 +211,7 @@ export default function ResumeBuilder({ initialContent }) {
                     {...register("contactInfo.email")}
                     type="email"
                     placeholder="your@email.com"
-                    error={errors.contactInfo?.email}
+                    error={errors.contactInfo?.email}  // contact info is schema which has email field check schema in lib/schema.js
                   />
                   {errors.contactInfo?.email && (
                     <p className="text-sm text-red-500">
@@ -212,6 +219,8 @@ export default function ResumeBuilder({ initialContent }) {
                     </p>
                   )}
                 </div>
+
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Mobile Number</label>
                   <Input
@@ -224,7 +233,10 @@ export default function ResumeBuilder({ initialContent }) {
                       {errors.contactInfo.mobile.message}
                     </p>
                   )}
+
                 </div>
+
+                
                 <div className="space-y-2">
                   <label className="text-sm font-medium">LinkedIn URL</label>
                   <Input
@@ -238,6 +250,8 @@ export default function ResumeBuilder({ initialContent }) {
                     </p>
                   )}
                 </div>
+
+
                 <div className="space-y-2">
                   <label className="text-sm font-medium">
                     Twitter/X Profile
@@ -260,7 +274,7 @@ export default function ResumeBuilder({ initialContent }) {
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Professional Summary</h3>
               <Controller
-                name="summary"
+                name="summary" // summary is field in schema
                 control={control}
                 render={({ field }) => (
                   <Textarea
@@ -271,7 +285,7 @@ export default function ResumeBuilder({ initialContent }) {
                   />
                 )}
               />
-              {errors.summary && (
+              {errors.summary && ( // summary is field in schema which can have error message
                 <p className="text-sm text-red-500">{errors.summary.message}</p>
               )}
             </div>
@@ -360,6 +374,9 @@ export default function ResumeBuilder({ initialContent }) {
             </div>
           </form>
         </TabsContent>
+
+
+        {/* // Preview Tab Content for Markdown Editor */}
 
         <TabsContent value="preview">
           {activeTab === "preview" && (

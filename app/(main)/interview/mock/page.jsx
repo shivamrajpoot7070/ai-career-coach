@@ -13,7 +13,6 @@ export default function MockInterviewPage() {
             Back to Interview Preparation
           </Button>
         </Link>
-
         <div>
           <h1 className="text-6xl font-bold gradient-title">Mock Interview</h1>
           <p className="text-muted-foreground">
@@ -22,7 +21,8 @@ export default function MockInterviewPage() {
         </div>
       </div>
 
-      <Quiz />
+      {/* // Quiz component to render the quiz interface */}
+      <Quiz /> 
     </div>
   );
 }

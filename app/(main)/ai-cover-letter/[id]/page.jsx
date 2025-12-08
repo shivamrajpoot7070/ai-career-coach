@@ -4,10 +4,14 @@ import { Button } from "@/components/ui/button";
 import { getCoverLetter } from "@/actions/cover-letter";
 import CoverLetterPreview from "../_components/cover-letter-preview";
 
-export default async function EditCoverLetterPage({ params }) {
-  const { id } = await params;
-  const coverLetter = await getCoverLetter(id);
+// this page is to open the cover letter in read only mode when u click to see
 
+export default async function EditCoverLetterPage({ params }) {
+  const { id } = await params;  // id of the cover letter to be fetched
+
+  const coverLetter = await getCoverLetter(id);  // fetch the cover letter from the database
+
+    // show the cover letter details and content in read only mode
   return (
     <div className="container mx-auto py-6">
       <div className="flex flex-col space-y-2">

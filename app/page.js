@@ -21,13 +21,16 @@ import { features } from "@/data/features";
 import { testimonial } from "@/data/testimonial";
 import { faqs } from "@/data/faqs";
 import { howItWorks } from "@/data/howItWorks";
+import { getUserOnboardingStatus } from "@/actions/user";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+
   return (
     <>
       <div className="grid-background"></div>
+      
+      {/* Hero Section  for image and writting part*/}
 
-      {/* Hero Section */}
       <HeroSection />
 
       {/* Features Section */}

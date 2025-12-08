@@ -18,14 +18,19 @@ import useFetch from "@/hooks/use-fetch";
 import { BarLoader } from "react-spinners";
 
 export default function Quiz() {
+  // State variables for each question, answers, and quiz status per question
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState([]);
+  const [answers, setAnswers] = useState([]);  // this will be array of user's answers
   const [showExplanation, setShowExplanation] = useState(false);
 
+   // this hook to generate quiz questions
+   // this hook will go in use fetch and there
+   // we have loading , data , error , fn to call the function
+   // will be set
   const {
     loading: generatingQuiz,
     fn: generateQuizFn,
-    data: quizData,
+    data: quizData,   // data will be the quiz questions array gene by genetate quix func named ad quizData 
   } = useFetch(generateQuiz);
 
   const {
@@ -41,21 +46,28 @@ export default function Quiz() {
     }
   }, [quizData]);
 
+  // this will handle when user selects an answer
   const handleAnswer = (answer) => {
+    // new answers array with updated answer for current question
     const newAnswers = [...answers];
     newAnswers[currentQuestion] = answer;
-    setAnswers(newAnswers);
+    setAnswers(newAnswers);  // answer is array of user's answers one by one it will be set
   };
 
   const handleNext = () => {
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion(currentQuestion + 1);
       setShowExplanation(false);
-    } else {
+    }
+     else {
       finishQuiz();
     }
   };
 
+  // answers : array of user's answers
+  // quizData : array of question objects
+  // quiz data is array of questions coming from generateQuiz function with correct answer and explanation
+  
   const calculateScore = () => {
     let correct = 0;
     answers.forEach((answer, index) => {
@@ -69,9 +81,10 @@ export default function Quiz() {
   const finishQuiz = async () => {
     const score = calculateScore();
     try {
-      await saveQuizResultFn(quizData, answers, score);
+      await saveQuizResultFn(quizData, answers, score); // backend will take all this parameters and save in db
       toast.success("Quiz completed!");
-    } catch (error) {
+    } 
+    catch (error) {
       toast.error(error.message || "Failed to save quiz results");
     }
   };
@@ -95,6 +108,7 @@ export default function Quiz() {
         <QuizResult result={resultData} onStartNew={startNewQuiz} />
       </div>
     );
+
   }
 
   if (!quizData) {
@@ -118,7 +132,7 @@ export default function Quiz() {
     );
   }
 
-  const question = quizData[currentQuestion];
+  const question = quizData[currentQuestion]; // quiz data is array of questions
 
   return (
     <Card className="mx-2">
@@ -134,7 +148,7 @@ export default function Quiz() {
           value={answers[currentQuestion]}
           className="space-y-2"
         >
-          {question.options.map((option, index) => (
+          {question.options.map((option, index) => ( // question options is array of options coming from ai generated question object
             <div key={index} className="flex items-center space-x-2">
               <RadioGroupItem value={option} id={`option-${index}`} />
               <Label htmlFor={`option-${index}`}>{option}</Label>

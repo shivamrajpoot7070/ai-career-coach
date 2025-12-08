@@ -4,9 +4,67 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// ------------------------------
+// Gemini Setup + Retry Logic
+// ------------------------------
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+// Generic retry wrapper
+async function retryAI(fn, retries = 5, delay = 700) {
+  try {
+    return await fn();
+  } catch (err) {
+    const retryable =
+      err?.status === 503 ||
+      err?.status === 429 ||
+      err?.status === 500 ||
+      err?.statusText === "Service Unavailable";
+
+    if (retries > 0 && retryable) {
+      console.warn(`AI retry... attempts left: ${retries}`);
+      await new Promise((res) => setTimeout(res, delay));
+      return retryAI(fn, retries - 1, delay * 1.5);
+    }
+
+    throw err;
+  }
+}
+
+// Model fallback chain
+async function generateWithFallback(prompt) {
+  const models = ["gemini-2.5-pro", "gemini-1.5-pro", "gemini-1.5-flash"];
+
+  for (const m of models) {
+    try {
+      console.log(`Trying model: ${m}`);
+
+      const model = genAI.getGenerativeModel({ model: m });
+
+      const result = await retryAI(() =>
+        model.generateContent(prompt)
+      );
+
+      const text = result.response.text().trim();
+
+      // Clean markdown fences if present
+      const cleaned = text
+        .replace(/```/g, "")
+        .replace(/```markdown/g, "")
+        .trim();
+
+      return cleaned;
+    } catch (err) {
+      console.error(`Model ${m} failed →`, err.message);
+      continue;
+    }
+  }
+
+  throw new Error("All Gemini models failed");
+}
+
+// ------------------------------
+// Generate Cover Letter
+// ------------------------------
 export async function generateCoverLetter(data) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -18,35 +76,34 @@ export async function generateCoverLetter(data) {
   if (!user) throw new Error("User not found");
 
   const prompt = `
-    Write a professional cover letter for a ${data.jobTitle} position at ${
-    data.companyName
-  }.
-    
-    About the candidate:
+    Write a professional cover letter for a **${data.jobTitle}** position at **${data.companyName}**.
+
+    Candidate Information:
     - Industry: ${user.industry}
     - Years of Experience: ${user.experience}
-    - Skills: ${user.skills?.join(", ")}
-    - Professional Background: ${user.bio}
-    
+    - Skills: ${user.skills.join(", ")}
+    - Bio: ${user.bio}
+
     Job Description:
     ${data.jobDescription}
-    
+
     Requirements:
-    1. Use a professional, enthusiastic tone
-    2. Highlight relevant skills and experience
-    3. Show understanding of the company's needs
-    4. Keep it concise (max 400 words)
-    5. Use proper business letter formatting in markdown
-    6. Include specific examples of achievements
-    7. Relate candidate's background to job requirements
-    
-    Format the letter in markdown.
+    1. Professional, enthusiastic tone.
+    2. Highlight relevant skills and achievements.
+    3. Connect the candidate’s experience with the company’s goals.
+    4. Max 400 words.
+    5. Use clean markdown formatting.
+    6. Include specific achievements.
+    7. Avoid generic statements.
+
+    Generate ONLY the markdown cover letter, no extra text.
   `;
 
   try {
-    const result = await model.generateContent(prompt);
-    const content = result.response.text().trim();
+    // AI call OUTSIDE DB transaction
+    const content = await generateWithFallback(prompt);
 
+    // DB write (now safe)
     const coverLetter = await db.coverLetter.create({
       data: {
         content,
@@ -60,11 +117,14 @@ export async function generateCoverLetter(data) {
 
     return coverLetter;
   } catch (error) {
-    console.error("Error generating cover letter:", error.message);
+    console.error("Error generating cover letter:", error);
     throw new Error("Failed to generate cover letter");
   }
 }
 
+// ------------------------------
+// Fetch All Cover Letters
+// ------------------------------
 export async function getCoverLetters() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -76,15 +136,14 @@ export async function getCoverLetters() {
   if (!user) throw new Error("User not found");
 
   return await db.coverLetter.findMany({
-    where: {
-      userId: user.id,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
   });
 }
 
+// ------------------------------
+// Fetch Single Cover Letter
+// ------------------------------
 export async function getCoverLetter(id) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -96,13 +155,13 @@ export async function getCoverLetter(id) {
   if (!user) throw new Error("User not found");
 
   return await db.coverLetter.findUnique({
-    where: {
-      id,
-      userId: user.id,
-    },
+    where: { id, userId: user.id },
   });
 }
 
+// ------------------------------
+// Delete Cover Letter
+// ------------------------------
 export async function deleteCoverLetter(id) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -114,9 +173,6 @@ export async function deleteCoverLetter(id) {
   if (!user) throw new Error("User not found");
 
   return await db.coverLetter.delete({
-    where: {
-      id,
-      userId: user.id,
-    },
+    where: { id, userId: user.id },
   });
 }

@@ -22,13 +22,14 @@ export async function updateUser(data) {
         // First check if industry exists
         let industryInsight = await tx.industryInsight.findUnique({
           where: {
-            industry: data.industry,
+            industry: data.industry, // industry is a string like "technology-software " that we stored earlier when user is onboarded 
           },
         });
 
         // If industry doesn't exist, create it with default values
         if (!industryInsight) {
-          const insights = await generateAIInsights(data.industry);
+          
+          const insights = await generateAIInsights(data.industry);  // data.industry is like "technology-software"
 
           industryInsight = await db.industryInsight.create({
             data: {
@@ -40,6 +41,7 @@ export async function updateUser(data) {
         }
 
         // Now update the user
+
         const updatedUser = await tx.user.update({
           where: {
             id: user.id,
@@ -61,18 +63,20 @@ export async function updateUser(data) {
 
     revalidatePath("/");
     return result.user;
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Error updating user and industry:", error.message);
     throw new Error("Failed to update profile");
   }
 }
 
 export async function getUserOnboardingStatus() {
-  const { userId } = await auth();
+
+  const { userId } = await auth();  // from clerk auth
   if (!userId) throw new Error("Unauthorized");
 
   const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
+    where: { clerkUserId: userId },  // finding user in db using clerk user id
   });
 
   if (!user) throw new Error("User not found");
@@ -90,7 +94,8 @@ export async function getUserOnboardingStatus() {
     return {
       isOnboarded: !!user?.industry,
     };
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Error checking onboarding status:", error);
     throw new Error("Failed to check onboarding status");
   }

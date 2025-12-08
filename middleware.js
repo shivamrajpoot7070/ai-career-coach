@@ -1,16 +1,20 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+// routes that require authentication
 const isProtectedRoute = createRouteMatcher([
-  "/dashboard(.*)",
+  "/dashboard(.*)", // all dashboard routes wtver after /dashboard
   "/resume(.*)",
   "/interview(.*)",
   "/ai-cover-letter(.*)",
   "/onboarding(.*)",
 ]);
 
+// middleware to protect routes
 export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth();
+  const { userId } = await auth(); // get user id from auth of clerk
+
+  // if no user id and trying to access protected route, redirect to sign in
 
   if (!userId && isProtectedRoute(req)) {
     const { redirectToSignIn } = await auth();

@@ -28,6 +28,7 @@ const formatDisplayDate = (dateString) => {
 };
 
 export function EntryForm({ type, entries, onChange }) {
+
   const [isAdding, setIsAdding] = useState(false);
 
   const {
@@ -51,14 +52,17 @@ export function EntryForm({ type, entries, onChange }) {
 
   const current = watch("current");
 
+  // handle add new entry
+
   const handleAdd = handleValidation((data) => {
+
     const formattedEntry = {
       ...data,
       startDate: formatDisplayDate(data.startDate),
       endDate: data.current ? "" : formatDisplayDate(data.endDate),
     };
 
-    onChange([...entries, formattedEntry]);
+    onChange([...entries, formattedEntry]); // add new entry to entries array in parent component
 
     reset();
     setIsAdding(false);
@@ -70,16 +74,16 @@ export function EntryForm({ type, entries, onChange }) {
   };
 
   const {
-    loading: isImproving,
-    fn: improveWithAIFn,
-    data: improvedContent,
+    loading: isImproving,   // loading state for improving description
+    fn: improveWithAIFn,   // rename to improveWithAIFn to avoid conflict with imported improveWithAI
+    data: improvedContent, // improved description from AI
     error: improveError,
   } = useFetch(improveWithAI);
 
   // Add this effect to handle the improvement result
   useEffect(() => {
     if (improvedContent && !isImproving) {
-      setValue("description", improvedContent);
+      setValue("description", improvedContent); // set the improved description in the form field 
       toast.success("Description improved successfully!");
     }
     if (improveError) {
@@ -89,14 +93,16 @@ export function EntryForm({ type, entries, onChange }) {
 
   // Replace handleImproveDescription with this
   const handleImproveDescription = async () => {
-    const description = watch("description");
+
+    const description = watch("description"); // get current description value
+
     if (!description) {
       toast.error("Please enter a description first");
       return;
     }
 
-    await improveWithAIFn({
-      current: description,
+    await improveWithAIFn({  // improvewith ai wwill take current description and type (education, experience, project)
+      current: description,  
       type: type.toLowerCase(), // 'experience', 'education', or 'project'
     });
   };
@@ -104,6 +110,9 @@ export function EntryForm({ type, entries, onChange }) {
   return (
     <div className="space-y-4">
       <div className="space-y-4">
+
+        {/* // existing entries list or after adding new entry */}
+        
         {entries.map((item, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -133,10 +142,13 @@ export function EntryForm({ type, entries, onChange }) {
         ))}
       </div>
 
-      {isAdding && (
+      {/* // this is the form to add a new entry for each edcation, project & expericenc */}
+
+      {isAdding && ( // if clicekd on add {type}, show the add form 
         <Card>
           <CardHeader>
-            <CardTitle>Add {type}</CardTitle>
+            {/* // add experience, education, or project come from type from main component*/}
+            <CardTitle>Add {type}</CardTitle> 
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -150,6 +162,9 @@ export function EntryForm({ type, entries, onChange }) {
                   <p className="text-sm text-red-500">{errors.title.message}</p>
                 )}
               </div>
+
+              {/* // organization/company input */}
+
               <div className="space-y-2">
                 <Input
                   placeholder="Organization/Company"
@@ -164,6 +179,8 @@ export function EntryForm({ type, entries, onChange }) {
               </div>
             </div>
 
+            {/* // startDate */}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Input
@@ -177,11 +194,14 @@ export function EntryForm({ type, entries, onChange }) {
                   </p>
                 )}
               </div>
+
+              {/* // end date input */}
+
               <div className="space-y-2">
                 <Input
                   type="month"
                   {...register("endDate")}
-                  disabled={current}
+                  disabled={current} // if currentExper is checked, disable endDate input
                   error={errors.endDate}
                 />
                 {errors.endDate && (
@@ -192,13 +212,15 @@ export function EntryForm({ type, entries, onChange }) {
               </div>
             </div>
 
+                {/* // checkbox to mark current experience/education/project */}
+
             <div className="flex items-center space-x-2">
               <input
                 type="checkbox"
                 id="current"
                 {...register("current")}
                 onChange={(e) => {
-                  setValue("current", e.target.checked);
+                  setValue("current", e.target.checked); // update current value for checkbox of end  date
                   if (e.target.checked) {
                     setValue("endDate", "");
                   }
@@ -206,6 +228,8 @@ export function EntryForm({ type, entries, onChange }) {
               />
               <label htmlFor="current">Current {type}</label>
             </div>
+
+            {/* // description textarea with improve with AI button */}
 
             <div className="space-y-2">
               <Textarea
@@ -220,6 +244,9 @@ export function EntryForm({ type, entries, onChange }) {
                 </p>
               )}
             </div>
+
+            {/* // ai improve button */}
+
             <Button
               type="button"
               variant="ghost"
@@ -240,6 +267,9 @@ export function EntryForm({ type, entries, onChange }) {
               )}
             </Button>
           </CardContent>
+
+          {/* // form footer with cancel and add entry buttons */}
+
           <CardFooter className="flex justify-end space-x-2">
             <Button
               type="button"
@@ -259,7 +289,9 @@ export function EntryForm({ type, entries, onChange }) {
         </Card>
       )}
 
-      {!isAdding && (
+      {/* // this is the button to show the add new entry form it will be there bydefault*/}
+
+      {!isAdding && (  // by default it will be false ->>>>  if not adding, show the add button for type so that user can click to add new entry
         <Button
           className="w-full"
           variant="outline"
