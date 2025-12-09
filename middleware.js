@@ -8,6 +8,7 @@ const isProtectedRoute = createRouteMatcher([
   "/interview(.*)",
   "/ai-cover-letter(.*)",
   "/onboarding(.*)",
+  "/ats(.*)",
 ]);
 
 // middleware to protect routes

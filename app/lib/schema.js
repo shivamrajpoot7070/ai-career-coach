@@ -70,3 +70,18 @@ export const coverLetterSchema = z.object({
   jobTitle: z.string().min(1, "Job title is required"),
   jobDescription: z.string().min(1, "Job description is required"),
 });
+
+export const atsSchema = z.object({
+  resumeFile: z
+    .any()
+    .refine((fileList) => fileList?.length === 1, "Please upload a PDF file.")
+    .refine(
+      (fileList) => fileList?.[0]?.type === "application/pdf",
+      "Only PDF files are allowed."
+    ),
+
+  jobDescription: z
+    .string()
+    .min(20, "Job description should be at least 20 characters long."),
+});
+
