@@ -9,7 +9,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // ------------------------------
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Generic Retry Wrapper
+// ------------------------------
+// Retry Wrapper
+// ------------------------------
 async function retryAI(fn, retries = 5, delay = 700) {
   try {
     return await fn();
@@ -20,9 +22,9 @@ async function retryAI(fn, retries = 5, delay = 700) {
       err?.status === 500 ||
       err?.statusText === "Service Unavailable";
 
-    if (retries > 0 && retryable) {
+    if (retryable && retries > 0) {
       console.warn(`Gemini retry... attempts left: ${retries}`);
-      await new Promise((res) => setTimeout(res, delay));
+      await new Promise(res => setTimeout(res, delay));
       return retryAI(fn, retries - 1, delay * 1.5);
     }
 
@@ -30,21 +32,18 @@ async function retryAI(fn, retries = 5, delay = 700) {
   }
 }
 
-// Fallback model chain
+// ------------------------------
+// Fallback Model Chain
+// ------------------------------
 async function generateWithFallback(prompt) {
-
-  const models = ["gemini-2.5-pro", "gemini-1.5-pro", "gemini-1.5-flash"];
+  const models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-flash-latest"];
 
   for (const m of models) {
     try {
       console.log(`Trying model: ${m}`);
-
       const model = genAI.getGenerativeModel({ model: m });
 
-      const result = await retryAI(() =>
-        model.generateContent(prompt)
-      );
-
+      const result = await retryAI(() => model.generateContent(prompt));
       const text = result.response.text().trim();
 
       const cleaned = text
@@ -53,86 +52,66 @@ async function generateWithFallback(prompt) {
         .trim();
 
       return JSON.parse(cleaned);
-    } 
-    catch (err) {
+    } catch (err) {
       console.error(`Model ${m} failed →`, err.message);
-      continue; // try next model
     }
   }
 
   throw new Error("All Gemini models failed.");
 }
 
-// -----------------------------------------
-// Final Insight Generator (Safe for Prod)
-// -----------------------------------------
+// ------------------------------
+// SAFE Insight Generator
+// ------------------------------
 export const generateAIInsights = async (industry) => {
   const prompt = `
-    Analyze the current state of the ${industry} industry and provide insights in ONLY the following JSON:
+    Analyze the ${industry} industry and return ONLY this JSON:
     {
-      "salaryRanges": [
-        { "role": "string", "min": number, "max": number, "median": number, "location": "string" }
-      ],
+      "salaryRanges": [{ "role": "string", "min": number, "max": number, "median": number, "location": "string" }],
       "growthRate": number,
       "demandLevel": "High" | "Medium" | "Low",
-      "topSkills": ["skill1", "skill2"],
+      "topSkills": ["s1","s2","s3","s4","s5"],
       "marketOutlook": "Positive" | "Neutral" | "Negative",
-      "keyTrends": ["trend1", "trend2"],
-      "recommendedSkills": ["skill1", "skill2"]
+      "keyTrends": ["t1","t2","t3","t4","t5"],
+      "recommendedSkills": ["s1","s2","s3","s4","s5"]
     }
-
-    Return ONLY valid JSON.
-    No markdown.
-    No code blocks.
-    Include at least 5 roles, 5 skills, 5 trends.
+    No markdown. No extra text.
   `;
 
   return await generateWithFallback(prompt);
 };
 
-// --------------------------------------------------
-// UPDATE USER — With safe Gemini + transaction
-// --------------------------------------------------
-
+// ===================================================================
+// FIXED updateUser — AI OUTSIDE transaction, DB writes INSIDE transaction
+// ===================================================================
 export async function updateUser(data) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
+  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
   if (!user) throw new Error("User not found");
 
   try {
-    // -------------------------------------------------
-    // 1. Check if insight exists BEFORE transaction
-    //    The AI call must happen outside the transaction
-    // -------------------------------------------------
-    let industryInsight = await db.industryInsight.findUnique({
+    // STEP 1 — Check if insight exists (FAST)
+    let existingInsight = await db.industryInsight.findUnique({
       where: { industry: data.industry },
     });
 
-    let insights;
-
-    if (!industryInsight) {
-      // SAFE: AI call outside transaction
-      insights = await generateAIInsights(data.industry);
+    // STEP 2 — AI CALL OUTSIDE transaction (IMPORTANT!!)
+    let aiInsights = null;
+    if (!existingInsight) {
+      aiInsights = await generateAIInsights(data.industry);
     }
 
-    // -------------------------------------------------
-    // 2. Now run DB writes inside a transaction
-    // -------------------------------------------------
-
+    // STEP 3 — SAFE DB writes (super fast)
     const result = await db.$transaction(async (tx) => {
-      let newInsight = industryInsight;
+      let finalInsight = existingInsight;
 
-      if (!industryInsight) {
-
-        newInsight = await tx.industryInsight.create({
+      if (!existingInsight) {
+        finalInsight = await tx.industryInsight.create({
           data: {
             industry: data.industry,
-            ...insights,
+            ...aiInsights,
             nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           },
         });
@@ -148,43 +127,34 @@ export async function updateUser(data) {
         },
       });
 
-      return { updatedUser, newInsight };
+      return { updatedUser };
     });
 
     return result.updatedUser;
-  } 
-  catch (error) {
+  } catch (error) {
     console.error("Error updating user and industry:", error);
     throw new Error("Failed to update profile");
   }
 }
 
-
-// --------------------------------------------------
-// FIXED — SAFE ONBOARDING STATUS CHECK
-// --------------------------------------------------
-
+// ------------------------------
+// ONBOARDING STATUS
+// ------------------------------
 export async function getUserOnboardingStatus() {
   const { userId } = await auth();
-
-  // DO NOT THROW — allows onboarding after sign-in
-  if (!userId) {
-    return { isOnboarded: false };
-  }
+  if (!userId) return { isOnboarded: false };
 
   const user = await db.user.findUnique({
     where: { clerkUserId: userId },
     select: { industry: true },
   });
 
-  return {
-    isOnboarded: !!user?.industry,
-  };
+  return { isOnboarded: !!user?.industry };
 }
 
-// --------------------------------------------------
-// FETCH INDUSTRY INSIGHTS
-// --------------------------------------------------
+// ------------------------------
+// FETCH INSIGHTS
+// ------------------------------
 export async function getIndustryInsights() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -197,7 +167,6 @@ export async function getIndustryInsights() {
   if (!user) throw new Error("User not found");
 
   if (!user.industryInsight) {
-
     const insights = await generateAIInsights(user.industry);
 
     return await db.industryInsight.create({

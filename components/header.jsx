@@ -18,12 +18,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 import { checkUser } from "@/lib/checkUser";
-import { getUserOnboardingStatus } from "@/actions/dashboard";
-import { redirect } from "next/dist/server/api-utils";
+import NavActions from "./NavActions";
 
 export default async function Header() {
 
-   await checkUser(); // ensure user exists in the database then move on to render the header
+   await checkUser({ allowRedirect: true });; // ensure user exists in the database then move on to render the header
    // this function checks if the user exists in the database, if not it creates a new user
 
   return (
@@ -31,11 +30,11 @@ export default async function Header() {
       <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/">
           <Image
-            src={"/logo.png"}
+            src={"/prepprooo.png"}
             alt="Sensai Logo"
-            width={200}
-            height={60}
-            className="h-12 py-1 w-auto object-contain"
+            width={190}
+            height={190}
+            className="w-32 md:w-40 ojbect-contain"
           />
         </Link>
 
@@ -43,52 +42,7 @@ export default async function Header() {
         <div className="flex items-center space-x-2 md:space-x-4">
           {/* // this part will show when user is signed in */}
           <SignedIn>    
-            <Link href="/dashboard">
-              <Button
-                variant="outline"
-                className="hidden md:inline-flex items-center gap-2"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Industry Insights
-              </Button>
-              <Button variant="ghost" className="md:hidden w-10 h-10 p-0">
-                <LayoutDashboard className="h-4 w-4" />
-              </Button>
-            </Link>
-
-            {/* Growth Tools Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <StarsIcon className="h-4 w-4" />
-                  <span className="hidden md:block">Growth Tools</span>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/resume" className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Build Resume
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/ai-cover-letter"
-                    className="flex items-center gap-2"
-                  >
-                    <PenBox className="h-4 w-4" />
-                    Cover Letter
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/interview" className="flex items-center gap-2">
-                    <GraduationCap className="h-4 w-4" />
-                    Interview Prep
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <NavActions />
           </SignedIn>
 
           {/* // this part will show when user is signed out */}

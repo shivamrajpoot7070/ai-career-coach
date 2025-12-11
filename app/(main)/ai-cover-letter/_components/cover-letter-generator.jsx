@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -19,8 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { generateCoverLetter } from "@/actions/cover-letter";
 import useFetch from "@/hooks/use-fetch";
 import { coverLetterSchema } from "@/app/lib/schema";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import FancyLoader from "@/components/FancyLoader"; // <-- ADDED
 
 export default function CoverLetterGenerator() {
   const router = useRouter();
@@ -40,7 +39,6 @@ export default function CoverLetterGenerator() {
     data: generatedLetter,
   } = useFetch(generateCoverLetter);
 
-  // Update content when letter is generated
   useEffect(() => {
     if (generatedLetter) {
       toast.success("Cover letter generated successfully!");
@@ -66,9 +64,10 @@ export default function CoverLetterGenerator() {
             Provide information about the position you're applying for
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Form fields remain the same */}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="companyName">Company Name</Label>
@@ -78,9 +77,7 @@ export default function CoverLetterGenerator() {
                   {...register("companyName")}
                 />
                 {errors.companyName && (
-                  <p className="text-sm text-red-500">
-                    {errors.companyName.message}
-                  </p>
+                  <p className="text-sm text-red-500">{errors.companyName.message}</p>
                 )}
               </div>
 
@@ -92,9 +89,7 @@ export default function CoverLetterGenerator() {
                   {...register("jobTitle")}
                 />
                 {errors.jobTitle && (
-                  <p className="text-sm text-red-500">
-                    {errors.jobTitle.message}
-                  </p>
+                  <p className="text-sm text-red-500">{errors.jobTitle.message}</p>
                 )}
               </div>
             </div>
@@ -108,24 +103,23 @@ export default function CoverLetterGenerator() {
                 {...register("jobDescription")}
               />
               {errors.jobDescription && (
-                <p className="text-sm text-red-500">
-                  {errors.jobDescription.message}
-                </p>
+                <p className="text-sm text-red-500">{errors.jobDescription.message}</p>
               )}
             </div>
 
             <div className="flex justify-end">
               <Button type="submit" disabled={generating}>
                 {generating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <div className="flex items-center gap-2">
+                    <FancyLoader />
                     Generating...
-                  </>
+                  </div>
                 ) : (
                   "Generate Cover Letter"
                 )}
               </Button>
             </div>
+
           </form>
         </CardContent>
       </Card>

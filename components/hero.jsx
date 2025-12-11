@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+
 const HeroSection = () => {
 
 
@@ -12,7 +13,6 @@ const HeroSection = () => {
   // client page bcoz using hooks
 
   // this is for image scroll animation
-
 
   useEffect(() => {
 

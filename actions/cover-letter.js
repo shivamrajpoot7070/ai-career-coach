@@ -32,7 +32,8 @@ async function retryAI(fn, retries = 5, delay = 700) {
 
 // Model fallback chain
 async function generateWithFallback(prompt) {
-  const models = ["gemini-2.5-pro", "gemini-1.5-pro", "gemini-1.5-flash"];
+  const models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-flash-latest"];
+;
 
   for (const m of models) {
     try {

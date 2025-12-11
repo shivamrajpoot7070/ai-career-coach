@@ -28,7 +28,7 @@ model User {
   resume        Resume?
   coverLetter   CoverLetter[]
 
-   atsReports    AtsReport[]
+  atsReports    AtsReport[]
 }
 
 model AtsReport {

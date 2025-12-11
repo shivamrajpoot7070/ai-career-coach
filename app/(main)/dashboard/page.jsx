@@ -12,7 +12,7 @@ export default async function DashboardPage() {
   if (!isOnboarded) {
     redirect("/onboarding");
   }
-
+  
   const insights = await getIndustryInsights();
 
   return (

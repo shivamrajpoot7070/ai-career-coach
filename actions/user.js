@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { generateAIInsights } from "./dashboard";
 
 export async function updateUser(data) {
+
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
