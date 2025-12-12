@@ -2,42 +2,11 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+import { generateAI } from "@/lib/gemini"; // <-- your new shared engine
 
 /* -------------------------------------------------------
-   MODEL FALLBACK SYSTEM — WORKS EVEN WHEN MAIN MODEL FAILS
+   1) Generate Quiz (Uses generateAI)
 -------------------------------------------------------- */
-
-const MODEL_ORDER = [
-  "gemini-2.5-flash",        // Fastest (but overloaded sometimes)
-  "gemini-flash-latest",     // Very stable alternative
-  "gemini-2.5-flash-lite"    // Always available fallback
-];
-
-async function generateWithFallback(prompt) {
-  for (const modelName of MODEL_ORDER) {
-    try {
-      console.log("Trying model:", modelName);
-
-      const model = genAI.getGenerativeModel({ model: modelName });
-      const result = await model.generateContent(prompt);
-
-      return result.response.text();
-    } catch (err) {
-      console.log(`Model ${modelName} failed →`, err.message);
-      continue; // try next model
-    }
-  }
-
-  throw new Error("All Gemini models failed");
-}
-
-/* -------------------------------------------------------
-   1) Generate Quiz
--------------------------------------------------------- */
-
 export async function generateQuiz() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -64,10 +33,12 @@ export async function generateQuiz() {
         }
       ]
     }
+
+    Return ONLY JSON.
   `;
 
   try {
-    const raw = await generateWithFallback(prompt);
+    const raw = await generateAI(prompt);   // 🔥 unified engine
 
     const cleaned = raw.replace(/```json|```/g, "").trim();
     const quiz = JSON.parse(cleaned);
@@ -80,9 +51,8 @@ export async function generateQuiz() {
 }
 
 /* -------------------------------------------------------
-   2) Save Quiz Result + Generate Improvement Tip
+   2) Save Quiz Result + Improvement Tip (Uses generateAI)
 -------------------------------------------------------- */
-
 export async function saveQuizResult(questions, answers, score) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -101,12 +71,11 @@ export async function saveQuizResult(questions, answers, score) {
     explanation: q.explanation
   }));
 
-  const wrongAnswers = questionResults.filter((q) => !q.isCorrect);
-
+  const wrong = questionResults.filter((q) => !q.isCorrect);
   let improvementTip = null;
 
-  if (wrongAnswers.length > 0) {
-    const wrongText = wrongAnswers
+  if (wrong.length > 0) {
+    const wrongText = wrong
       .map(
         (q) =>
           `Question: "${q.question}"\nCorrect: "${q.answer}"\nUser: "${q.userAnswer}"`
@@ -114,23 +83,22 @@ export async function saveQuizResult(questions, answers, score) {
       .join("\n\n");
 
     const improvementPrompt = `
-      Based on the mistakes below, provide a short 2-sentence improvement tip.
-      Do NOT mention the mistakes directly — focus on what the learner should improve.
+      Provide a 2-sentence improvement tip based on these mistakes.
+      Do NOT mention the mistakes directly — only what the learner should improve.
 
       ${wrongText}
     `;
 
     try {
-      const tipRaw = await generateWithFallback(improvementPrompt);
-      improvementTip = tipRaw.trim();
-    } catch (error) {
-      console.error("Error generating improvement tip:", error);
+      improvementTip = (await generateAI(improvementPrompt)).trim(); // 🔥 unified engine
+    } catch (err) {
+      console.error("AI improvement tip failed:", err);
       improvementTip = null;
     }
   }
 
   try {
-    const assessment = await db.assessment.create({
+    return await db.assessment.create({
       data: {
         userId: user.id,
         quizScore: score,
@@ -139,8 +107,6 @@ export async function saveQuizResult(questions, answers, score) {
         improvementTip
       }
     });
-
-    return assessment;
   } catch (error) {
     console.error("Error saving quiz result:", error);
     throw new Error("Failed to save quiz result");
@@ -148,9 +114,8 @@ export async function saveQuizResult(questions, answers, score) {
 }
 
 /* -------------------------------------------------------
-   3) Retrieve All Assessments
+   3) Get Assessments
 -------------------------------------------------------- */
-
 export async function getAssessments() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");

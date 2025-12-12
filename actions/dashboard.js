@@ -2,67 +2,11 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateAI } from "@/lib/gemini"; // 🔥 unified multi-key + fallback AI engine
 
-// ------------------------------
-// Gemini Setup
-// ------------------------------
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-// ------------------------------
-// Retry Wrapper
-// ------------------------------
-async function retryAI(fn, retries = 5, delay = 700) {
-  try {
-    return await fn();
-  } catch (err) {
-    const retryable =
-      err?.status === 503 ||
-      err?.status === 429 ||
-      err?.status === 500 ||
-      err?.statusText === "Service Unavailable";
-
-    if (retryable && retries > 0) {
-      console.warn(`Gemini retry... attempts left: ${retries}`);
-      await new Promise(res => setTimeout(res, delay));
-      return retryAI(fn, retries - 1, delay * 1.5);
-    }
-
-    throw err;
-  }
-}
-
-// ------------------------------
-// Fallback Model Chain
-// ------------------------------
-async function generateWithFallback(prompt) {
-  const models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-flash-latest"];
-
-  for (const m of models) {
-    try {
-      console.log(`Trying model: ${m}`);
-      const model = genAI.getGenerativeModel({ model: m });
-
-      const result = await retryAI(() => model.generateContent(prompt));
-      const text = result.response.text().trim();
-
-      const cleaned = text
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
-
-      return JSON.parse(cleaned);
-    } catch (err) {
-      console.error(`Model ${m} failed →`, err.message);
-    }
-  }
-
-  throw new Error("All Gemini models failed.");
-}
-
-// ------------------------------
-// SAFE Insight Generator
-// ------------------------------
+/* -------------------------------------------------------
+   GENERATE INDUSTRY INSIGHTS USING SHARED AI ENGINE
+-------------------------------------------------------- */
 export const generateAIInsights = async (industry) => {
   const prompt = `
     Analyze the ${industry} industry and return ONLY this JSON:
@@ -78,41 +22,45 @@ export const generateAIInsights = async (industry) => {
     No markdown. No extra text.
   `;
 
-  return await generateWithFallback(prompt);
+  const raw = await generateAI(prompt); // Uses key rotation & fallback automatically
+  return JSON.parse(raw);
 };
 
-// ===================================================================
-// FIXED updateUser — AI OUTSIDE transaction, DB writes INSIDE transaction
-// ===================================================================
+/* -------------------------------------------------------
+   UPDATE USER (AI outside transaction, safe db writes)
+-------------------------------------------------------- */
 export async function updateUser(data) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId },
+  });
+
   if (!user) throw new Error("User not found");
 
   try {
-    // STEP 1 — Check if insight exists (FAST)
-    let existingInsight = await db.industryInsight.findUnique({
+    // STEP 1 — Check if insights already exist
+    let industryInsight = await db.industryInsight.findUnique({
       where: { industry: data.industry },
     });
 
-    // STEP 2 — AI CALL OUTSIDE transaction (IMPORTANT!!)
-    let aiInsights = null;
-    if (!existingInsight) {
-      aiInsights = await generateAIInsights(data.industry);
+    // STEP 2 — If not, call AI OUTSIDE transaction
+    let insights = null;
+    if (!industryInsight) {
+      insights = await generateAIInsights(data.industry);
     }
 
-    // STEP 3 — SAFE DB writes (super fast)
+    // STEP 3 — Fast DB writes inside transaction
     const result = await db.$transaction(async (tx) => {
-      let finalInsight = existingInsight;
+      let finalInsight = industryInsight;
 
-      if (!existingInsight) {
+      if (!industryInsight) {
         finalInsight = await tx.industryInsight.create({
           data: {
             industry: data.industry,
-            ...aiInsights,
-            nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            ...insights,
+            nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // +7 days
           },
         });
       }
@@ -137,9 +85,9 @@ export async function updateUser(data) {
   }
 }
 
-// ------------------------------
-// ONBOARDING STATUS
-// ------------------------------
+/* -------------------------------------------------------
+   CHECK ONBOARDING STATUS
+-------------------------------------------------------- */
 export async function getUserOnboardingStatus() {
   const { userId } = await auth();
   if (!userId) return { isOnboarded: false };
@@ -152,9 +100,9 @@ export async function getUserOnboardingStatus() {
   return { isOnboarded: !!user?.industry };
 }
 
-// ------------------------------
-// FETCH INSIGHTS
-// ------------------------------
+/* -------------------------------------------------------
+   FETCH INDUSTRY INSIGHTS (auto-generate if missing)
+-------------------------------------------------------- */
 export async function getIndustryInsights() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
