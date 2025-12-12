@@ -5,28 +5,19 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-
 const HeroSection = () => {
-
-
-  const imageRef = useRef(null);  // used in the image to target the image section on direct
-  // client page bcoz using hooks
-
-  // this is for image scroll animation
+  const imageRef = useRef(null);
 
   useEffect(() => {
-
-    const imageElement = imageRef.current; // take the current image element
+    const imageElement = imageRef.current;
 
     const handleScroll = () => {
-
       const scrollPosition = window.scrollY;
       const scrollThreshold = 100;
 
       if (scrollPosition > scrollThreshold) {
         imageElement.classList.add("scrolled");
-      }
-      else {
+      } else {
         imageElement.classList.remove("scrolled");
       }
     };
@@ -39,24 +30,30 @@ const HeroSection = () => {
     <section className="w-full pt-36 md:pt-48 pb-10">
       <div className="space-y-6 text-center">
         <div className="space-y-6 mx-auto">
-          <h1 className="text-5xl font-bold md:text-6xl lg:text-7xl xl:text-8xl gradient-title animate-gradient">
-            Your AI Career Coach for
+          <h1 className="text-5xl font-bold md:text-6xl lg:text-7xl xl:text-8xl">
+            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent animate-gradient">
+              Your AI Career Coach
+            </span>
             <br />
-            Professional Success
+            <span className="text-foreground">
+              for Professional Success
+            </span>
           </h1>
+
           <p className="mx-auto max-w-[600px] text-muted-foreground md:text-xl">
             Advance your career with personalized guidance, interview prep, and
             AI-powered tools for job success.
           </p>
         </div>
-        <div className="flex justify-center space-x-4">
 
+        <div className="flex justify-center space-x-4">
           <Link href="/dashboard">
             <Button size="lg" className="px-8">
               Get Started
             </Button>
           </Link>
         </div>
+
         <div className="hero-image-wrapper mt-5 md:mt-0">
           <div ref={imageRef} className="hero-image">
             <Image

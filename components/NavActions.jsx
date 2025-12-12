@@ -81,6 +81,11 @@ export default function NavActions() {
             Interview Prep
           </DropdownMenuItem>
 
+          <DropdownMenuItem onClick={() => navigate("/prep")}>
+            {iconOrLoader(<GraduationCap className="h-4 w-4" />)}
+             Company wise sheet
+          </DropdownMenuItem>
+
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
