@@ -11,6 +11,8 @@ import {
   GraduationCap,
   StarsIcon,
   ChevronDown,
+  StickyNote,
+  ListChecks
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -81,10 +83,15 @@ export default function NavActions() {
             Interview Prep
           </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={() => navigate("/prep")}>
-            {iconOrLoader(<GraduationCap className="h-4 w-4" />)}
-             Company wise sheet
-          </DropdownMenuItem>
+         <DropdownMenuItem onClick={() => navigate("/prep")}>
+  {iconOrLoader(<ListChecks className="h-4 w-4" />)}
+  Company wise sheet
+</DropdownMenuItem>
+
+          <DropdownMenuItem onClick={() => navigate("/notes")}>
+  {iconOrLoader(<StickyNote className="h-4 w-4" />)}
+  Smart Notes AI
+</DropdownMenuItem>
 
         </DropdownMenuContent>
       </DropdownMenu>

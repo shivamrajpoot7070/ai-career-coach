@@ -111,6 +111,17 @@ export default function Quiz() {
 
   }
 
+  if (savingResult) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16">
+      <BarLoader width={200} color="gray" />
+      <p className="mt-4 text-lg text-muted-foreground">
+        Generating your results...
+      </p>
+    </div>
+  );
+}
+
   if (!quizData) {
     return (
       <Card className="mx-2">
