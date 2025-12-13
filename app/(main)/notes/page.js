@@ -20,8 +20,8 @@ export default async function NotesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">My Notes</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="font-bold gradient-title text-4xl md:text-6xl">My Notes</h1>
+          <p className="text-lg text-muted-foreground mt-2">
             Your saved doubts, ideas & AI tips
           </p>
         </div>

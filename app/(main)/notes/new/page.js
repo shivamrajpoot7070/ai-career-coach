@@ -70,14 +70,14 @@ export default function AddNotePage() {
       {/* Back */}
       <button
         onClick={() => router.back()}
-        className="text-sm text-muted-foreground hover:underline mb-6"
+        className="text-lg text-muted-foreground hover:underline mb-6"
       >
         ← Back to Notes
       </button>
 
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold tracking-tight">
+        <h1 className="font-bold gradient-title text-4xl md:text-6xl">
           Create Smart Note
         </h1>
         <p className="text-muted-foreground mt-2 max-w-xl">

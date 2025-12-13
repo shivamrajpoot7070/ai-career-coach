@@ -13,7 +13,7 @@ export default function PrepIndex() {
         </Link>
       </div>
 
-      <h1 className="text-4xl font-bold mb-6">Company Sheets</h1>
+      <h1 className="font-bold gradient-title text-4xl md:text-6xl mb-4">Company Sheets</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {companies.map((c) => (

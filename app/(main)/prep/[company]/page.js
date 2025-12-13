@@ -32,7 +32,7 @@ export default async function CompanyPage({ params }) {
         </Link>
       </div>
 
-      <h1 className="text-4xl font-bold mb-6">
+      <h1 className="font-bold gradient-title text-4xl md:text-6xl mb-6">
         {company.name} • Topics
       </h1>
 

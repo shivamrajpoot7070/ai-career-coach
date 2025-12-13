@@ -73,10 +73,10 @@ export default async function TopicPage({ params }) {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold mb-2">
+        <h1 className="font-bold gradient-title text-3xl md:text-6xl mb-2">
           {company.name} • {displayTopic}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-lg text-muted-foreground">
           {questions.length} questions
         </p>
       </div>
