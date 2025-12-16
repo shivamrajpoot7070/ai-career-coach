@@ -37,25 +37,6 @@ export default function NavActions() {
   return (
     <div className="flex items-center space-x-2 md:space-x-4">
 
-      {/* Dashboard */}
-      <Button
-        variant="outline"
-        className="hidden md:inline-flex items-center gap-2"
-        onClick={() => navigate("/dashboard")}
-      >
-        {iconOrLoader(<LayoutDashboard className="h-4 w-4" />)}
-        Industry Insights
-      </Button>
-
-      {/* Mobile button */}
-      <Button
-        variant="ghost"
-        className="md:hidden w-10 h-10 p-0"
-        onClick={() => navigate("/dashboard")}
-      >
-        {iconOrLoader(<LayoutDashboard className="h-4 w-4" />)}
-      </Button>
-
       {/* Growth Tools */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

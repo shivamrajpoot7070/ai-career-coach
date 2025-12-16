@@ -7,8 +7,6 @@ import { Progress } from "@/components/ui/progress";
 
 export default function QuizResult({
   result,  // this will take result object from parent component having array `questions` with user answers and correct answers
-  hideStartNew = false,
-  onStartNew,
 }) {
   if (!result) return null;
 
@@ -65,14 +63,6 @@ export default function QuizResult({
         </div>
       </CardContent>
 
-      {!hideStartNew && (
-        <CardFooter>
-          {/* //on start new will come from parent component(quiz.jsx) to start new quiz */}
-          <Button onClick={onStartNew} className="w-full">
-            Start New Quiz
-          </Button>
-        </CardFooter>
-      )}
     </div>
   );
 }

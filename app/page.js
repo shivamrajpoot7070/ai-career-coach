@@ -21,7 +21,7 @@ import { features } from "@/data/features";
 import { testimonial } from "@/data/testimonial";
 import { faqs } from "@/data/faqs";
 import { howItWorks } from "@/data/howItWorks";
-import { getUserOnboardingStatus } from "@/actions/user";
+
 
 export default async function LandingPage() {
 

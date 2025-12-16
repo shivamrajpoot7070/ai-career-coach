@@ -66,7 +66,7 @@ export async function improveWithAI({ current, type }) {
   if (!user) throw new Error("User not found");
 
   const prompt = `
-    Improve this ${type} for a ${user.industry} professional.
+    Improve this ${type} engineering background professional.
     Make it impactful, metrics-driven, concise, and achievement-focused.
 
     Current content:

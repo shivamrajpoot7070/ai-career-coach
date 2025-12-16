@@ -7,22 +7,22 @@ import { generateAI } from "@/lib/gemini"; // <-- your new shared engine
 /* -------------------------------------------------------
    1) Generate Quiz (Uses generateAI)
 -------------------------------------------------------- */
-export async function generateQuiz() {
+export async function generateQuiz(topic) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-    select: { industry: true, skills: true }
-  });
-
-  if (!user) throw new Error("User not found");
+  if (!topic || topic.trim().length < 3) {
+    throw new Error("Invalid topic");
+  }
 
   const prompt = `
-    Generate 10 technical MCQ interview questions for a ${user.industry} professional
-    ${user.skills?.length ? `with expertise in ${user.skills.join(", ")}` : ""}.
+    Generate 10 technical MCQ interview questions on the topic:
 
-    Format EXACT JSON:
+    "${topic}"
+
+    Difficulty: Medium (interview level)
+
+    Format STRICT JSON:
     {
       "questions": [
         {
@@ -34,19 +34,23 @@ export async function generateQuiz() {
       ]
     }
 
-    Return ONLY JSON.
+    Rules:
+    - Options must be realistic
+    - correctAnswer must exactly match one option
+    - Explanation should be 1–2 lines only
+
+    Return ONLY valid JSON.
   `;
 
   try {
-    const raw = await generateAI(prompt);   // 🔥 unified engine
-
+    const raw = await generateAI(prompt);
     const cleaned = raw.replace(/```json|```/g, "").trim();
     const quiz = JSON.parse(cleaned);
 
     return quiz.questions;
-  } catch (error) {
-    console.error("Error generating quiz:", error);
-    throw new Error("Failed to generate quiz questions");
+  } catch (err) {
+    console.error("Quiz generation failed:", err);
+    throw new Error("Failed to generate quiz");
   }
 }
 

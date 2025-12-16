@@ -9,9 +9,9 @@ export const features = [
   },
   {
     icon: <LineChart className="w-10 h-10 mb-4 text-primary" />,
-    title: "Industry Insights",
+    title: "Smart Notes AI",
     description:
-      "Stay ahead with real-time industry trends, salary data, and market analysis.",
+      "Organize and summarize your interview notes using AI for easy review.",
   },
   {
     icon: <ScrollText className="w-10 h-10 mb-4 text-primary" />,
@@ -23,4 +23,5 @@ export const features = [
     title: "Company-Specific Prep",
     description: "Practice interview questions tailored to specific companies.",
   },
+  
 ];

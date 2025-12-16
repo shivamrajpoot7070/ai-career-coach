@@ -22,7 +22,7 @@ import NavActions from "./NavActions";
 
 export default async function Header() {
 
-   await checkUser({ allowRedirect: true });; // ensure user exists in the database then move on to render the header
+   await checkUser();// ensure user exists in the database then move on to render the header
    // this function checks if the user exists in the database, if not it creates a new user
 
   return (
