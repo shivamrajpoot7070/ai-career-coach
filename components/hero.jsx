@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 const HeroSection = () => {
   const imageRef = useRef(null);
@@ -47,9 +48,9 @@ const HeroSection = () => {
         </div>
 
         <div className="flex justify-center space-x-4">
-          <Link href="/dashboard">
-            <Button size="lg" className="px-8">
-              Get Started
+          <Link href="/prep">
+            <Button size="lg" className="px-8 hover:scale-105 transition-transform">
+              Wanna solve some problems? <span className="ml-2"><ArrowRight /></span>
             </Button>
           </Link>
         </div>

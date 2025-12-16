@@ -58,7 +58,7 @@ export default function Quiz() {
   ---------------------------- */
   if (!quizStarted && !quizData) {
     return (
-      <Card className="mx-2 max-w-xl mx-auto">
+      <Card className="max-2 max-w-xl mx-auto">
         <CardHeader>
           <CardTitle>Start Practice Quiz</CardTitle>
         </CardHeader>
