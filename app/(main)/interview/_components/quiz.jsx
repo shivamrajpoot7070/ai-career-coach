@@ -20,7 +20,6 @@ import { BarLoader } from "react-spinners";
 export default function Quiz() {
   const [topic, setTopic] = useState("");
   const [quizStarted, setQuizStarted] = useState(false);
-
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -45,8 +44,17 @@ export default function Quiz() {
   } = useFetch(saveQuizResult);
 
   /* ---------------------------
-     Initialize answers
+     Initialize answers after quiz data is loaded
   ---------------------------- */
+
+  // schema of quizData is array of question objects
+//   {
+//   "question": "What is closure in JavaScript?",
+//   "options": ["A", "B", "C", "D"],
+//   "correctAnswer": "C",
+//   "explanation": "Explanation here"
+// }
+
   useEffect(() => {
     if (quizData) {
       setAnswers(new Array(quizData.length).fill(null));
@@ -56,6 +64,7 @@ export default function Quiz() {
   /* ---------------------------
      Topic Form (FIRST SCREEN)
   ---------------------------- */
+
   if (!quizStarted && !quizData) {
     return (
       <Card className="max-2 max-w-xl mx-auto">
@@ -110,6 +119,7 @@ export default function Quiz() {
   /* ---------------------------
      Quiz Result
   ---------------------------- */
+
   if (resultData) {
     return (
       <div className="mx-2">
@@ -131,6 +141,7 @@ export default function Quiz() {
   /* ---------------------------
      Saving Result Loader
   ---------------------------- */
+
   if (savingResult) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
@@ -145,17 +156,20 @@ export default function Quiz() {
   /* ---------------------------
      Quiz Logic
   ---------------------------- */
-  const question = quizData[currentQuestion];
+  // quiz schema is array of questions with question, options, correctAnswer, explanation
+
+  const question = quizData[currentQuestion]; // current question object
 
   const handleAnswer = (answer) => {
     const newAnswers = [...answers];
-    newAnswers[currentQuestion] = answer;
+    newAnswers[currentQuestion] = answer; // set answer for current question answers = [null, null, "B", null, ...]
     setAnswers(newAnswers);
   };
 
   const calculateScore = () => {
     let correct = 0;
     answers.forEach((answer, idx) => {
+      // this will compare user answer with correct answer both are indexed similarly
       if (answer === quizData[idx].correctAnswer) correct++;
     });
     return (correct / quizData.length) * 100;
@@ -175,7 +189,8 @@ export default function Quiz() {
     if (currentQuestion < quizData.length - 1) {
       setCurrentQuestion((q) => q + 1);
       setShowExplanation(false);
-    } else {
+    } 
+    else {
       finishQuiz();
     }
   };
@@ -195,14 +210,16 @@ export default function Quiz() {
       </CardHeader>
 
       <CardContent className="space-y-4">
-        <p className="text-lg font-medium">{question.question}</p>
+        {/* // use question object to show question and options */}
+
+        <p className="text-lg font-medium">{question.question}</p>  
 
         <RadioGroup
           value={answers[currentQuestion]}
           onValueChange={handleAnswer}
           className="space-y-2"
         >
-          {question.options.map((option, index) => (
+          {question.options.map((option, index) => ( // each option for the question  
             <div key={index} className="flex items-center space-x-2">
               <RadioGroupItem value={option} id={`opt-${index}`} />
               <Label htmlFor={`opt-${index}`}>{option}</Label>

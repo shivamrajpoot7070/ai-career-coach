@@ -49,7 +49,7 @@ export default function QuizList({ assessments }) {
               <Card
                 key={assessment.id}
                 className="cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => setSelectedQuiz(assessment)}
+                onClick={() => setSelectedQuiz(assessment)} // open dialog with quiz result
               >
                 <CardHeader>
                   <CardTitle className="gradient-title text-2xl">

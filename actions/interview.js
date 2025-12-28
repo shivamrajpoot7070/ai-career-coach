@@ -4,6 +4,7 @@ import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateAI } from "@/lib/gemini"; // <-- your new shared engine
 
+
 /* -------------------------------------------------------
    1) Generate Quiz (Uses generateAI)
 -------------------------------------------------------- */
@@ -14,6 +15,12 @@ export async function generateQuiz(topic) {
   if (!topic || topic.trim().length < 3) {
     throw new Error("Invalid topic");
   }
+
+  await rateLimit({
+    key: `quiz:${userId}`,
+    limit: 1,
+    windowInSeconds: 600, // 10 minutes
+  });
 
   const prompt = `
     Generate 10 technical MCQ interview questions on the topic:
@@ -58,7 +65,13 @@ export async function generateQuiz(topic) {
    2) Save Quiz Result + Improvement Tip (Uses generateAI)
 -------------------------------------------------------- */
 export async function saveQuizResult(questions, answers, score) {
+
+  // abnswers is array of user answers indexed similarly to questions array
+  // questions is array of question objects with question, correctAnswer, explanation
+  // score is number
+
   const { userId } = await auth();
+  
   if (!userId) throw new Error("Unauthorized");
 
   const user = await db.user.findUnique({
@@ -67,6 +80,7 @@ export async function saveQuizResult(questions, answers, score) {
 
   if (!user) throw new Error("User not found");
 
+  // Prepare question results with correctness and explanations of each user answer + correct answer
   const questionResults = questions.map((q, idx) => ({
     question: q.question,
     answer: q.correctAnswer,
@@ -76,6 +90,7 @@ export async function saveQuizResult(questions, answers, score) {
   }));
 
   const wrong = questionResults.filter((q) => !q.isCorrect);
+
   let improvementTip = null;
 
   if (wrong.length > 0) {
@@ -95,11 +110,27 @@ export async function saveQuizResult(questions, answers, score) {
 
     try {
       improvementTip = (await generateAI(improvementPrompt)).trim(); // 🔥 unified engine
-    } catch (err) {
+    } 
+    catch (err) {
       console.error("AI improvement tip failed:", err);
-      improvementTip = null;
+      improvementTip = "Keep practicing to improve your skills."; // fallback tip
     }
   }
+
+  // THIS IS THE EXPECTED SCHEMA FOR SAVING QUIZ RESULT
+//   {
+//   "quizScore": 70,
+//   "questions": [
+//     {
+//       "question": "What is closure?",
+//       "answer": "C",
+//       "userAnswer": "B",
+//       "isCorrect": false,
+//       "explanation": "..."
+//     }
+//   ],
+//   "improvementTip": "..."
+// }
 
   try {
     return await db.assessment.create({
@@ -111,7 +142,8 @@ export async function saveQuizResult(questions, answers, score) {
         improvementTip
       }
     });
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Error saving quiz result:", error);
     throw new Error("Failed to save quiz result");
   }
@@ -135,7 +167,8 @@ export async function getAssessments() {
       where: { userId: user.id },
       orderBy: { createdAt: "asc" }
     });
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Error fetching assessments:", error);
     throw new Error("Failed to fetch assessments");
   }

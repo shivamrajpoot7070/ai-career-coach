@@ -10,6 +10,9 @@ export default function QuizResult({
 }) {
   if (!result) return null;
 
+
+  // schems of result is quiiz score, improvementTip, [questions array with user answers and correct answers and explanation for each question]
+
   return (
     <div className="mx-auto">
       <h1 className="flex items-center gap-2 text-3xl gradient-title">
@@ -62,7 +65,6 @@ export default function QuizResult({
           ))}
         </div>
       </CardContent>
-
     </div>
   );
 }
