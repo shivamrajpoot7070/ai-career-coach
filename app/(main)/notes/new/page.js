@@ -51,9 +51,6 @@ export default function AddNotePage() {
     }
   };
 
-  /* ---------------------------
-     SAVE NOTE (DB WRITE)
-  ---------------------------- */
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -130,7 +127,7 @@ export default function AddNotePage() {
             "
           />
         </div>
-
+        
         {/* AI Section */}
         <div className="rounded-xl border bg-muted/40 p-6 space-y-4">
           <div className="flex items-center justify-between">

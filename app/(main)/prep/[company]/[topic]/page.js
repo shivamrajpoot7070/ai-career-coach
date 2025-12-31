@@ -24,8 +24,8 @@ export default async function TopicPage({ params }) {
   // 1️⃣ Find company
   const company = companies.find(c => c.slug === companySlug);
   if (!company) {
-  notFound();
-}
+     notFound();
+  }
 
   const difficultyColor = (difficulty) => {
   switch (difficulty) {

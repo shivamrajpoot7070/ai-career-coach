@@ -9,14 +9,14 @@ export const features = [
   },
   {
     icon: <LineChart className="w-10 h-10 mb-4 text-primary" />,
-    title: "Smart Notes AI",
+    title: "Roadmaps",
     description:
-      "Organize and summarize your interview notes using AI for easy review.",
+      "Follow structured learning paths designed to get you interview-ready in your chosen field.",
   },
   {
     icon: <ScrollText className="w-10 h-10 mb-4 text-primary" />,
-    title: "Smart Resume Creation",
-    description: "Generate ATS-optimized resumes with AI assistance.",
+    title: "Core CS Subjects",
+    description: " learn and master essential computer science topics for interviews.",
   },
   {
     icon: <ScrollText className="w-10 h-10 mb-4 text-primary" />,

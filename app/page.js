@@ -198,7 +198,7 @@ export default async function LandingPage() {
               Join thousands of professionals who are advancing their careers
               with AI-powered guidance.
             </p>
-            <Link href="/dashboard" passHref>
+            <Link href="/roadmap" passHref>
               <Button
                 size="lg"
                 variant="secondary"

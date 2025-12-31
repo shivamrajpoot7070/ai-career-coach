@@ -12,7 +12,8 @@ import {
   StarsIcon,
   ChevronDown,
   StickyNote,
-  ListChecks
+  ListChecks,
+  Book
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -49,14 +50,14 @@ export default function NavActions() {
 
         <DropdownMenuContent align="end" className="w-48">
 
-          <DropdownMenuItem onClick={() => navigate("/resume")}>
-            {iconOrLoader(<FileText className="h-4 w-4" />)}
-            Build Resume
+           <DropdownMenuItem onClick={() => navigate("/roadmap")}>
+            {iconOrLoader(<Book className="h-4 w-4" />)}
+              Roadmaps
           </DropdownMenuItem>
 
-          <DropdownMenuItem onClick={() => navigate("/ai-cover-letter")}>
-            {iconOrLoader(<PenBox className="h-4 w-4" />)}
-            Cover Letter
+           <DropdownMenuItem onClick={() => navigate("/coresubjects")}>
+            {iconOrLoader(<FileText className="h-4 w-4" />)}
+              core CS Subjects
           </DropdownMenuItem>
 
           <DropdownMenuItem onClick={() => navigate("/interview")}>
@@ -73,6 +74,11 @@ export default function NavActions() {
   {iconOrLoader(<StickyNote className="h-4 w-4" />)}
   Smart Notes AI
 </DropdownMenuItem>
+
+<DropdownMenuItem onClick={() => navigate("/ai-cover-letter")}>
+            {iconOrLoader(<PenBox className="h-4 w-4" />)}
+            Cover Letter generator
+          </DropdownMenuItem>
 
         </DropdownMenuContent>
       </DropdownMenu>
