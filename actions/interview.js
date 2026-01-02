@@ -16,12 +16,7 @@ export async function generateQuiz(topic) {
     throw new Error("Invalid topic");
   }
 
-  await rateLimit({
-    key: `quiz:${userId}`,
-    limit: 1,
-    windowInSeconds: 600, // 10 minutes
-  });
-
+  
   const prompt = `
     Generate 10 technical MCQ interview questions on the topic:
 
