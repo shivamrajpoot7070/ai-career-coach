@@ -19,6 +19,7 @@ import {
 import Image from "next/image";
 import { checkUser } from "@/lib/checkUser";
 import NavActions from "./NavActions";
+import HappyNewYearButton from "./HappyNewYearButton";
 
 export default async function Header() {
 
@@ -37,6 +38,11 @@ export default async function Header() {
             className="w-32 md:w-40 ojbect-contain"
           />
         </Link>
+
+        <p>
+          <HappyNewYearButton />
+        </p>
+
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-2 md:space-x-4">
