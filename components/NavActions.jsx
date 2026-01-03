@@ -13,7 +13,8 @@ import {
   ChevronDown,
   StickyNote,
   ListChecks,
-  Book
+  Book,
+  BookAudio
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -59,6 +60,11 @@ export default function NavActions() {
             {iconOrLoader(<FileText className="h-4 w-4" />)}
               core CS Subjects
           </DropdownMenuItem>
+
+          <DropdownMenuItem onClick={() => navigate("/ats")}>
+            {iconOrLoader(<BookAudio className="h-4 w-4" />)}
+              Resume ATS Checker
+            </DropdownMenuItem>
 
           <DropdownMenuItem onClick={() => navigate("/interview")}>
             {iconOrLoader(<GraduationCap className="h-4 w-4" />)}

@@ -6,8 +6,8 @@ export async function askChatBot(question) {
   if (!question) throw new Error("Empty question");
 
   const prompt = `
-You are an AI Interview Assistant for a career-prep platform.
 
+You are an AI Interview Assistant for a career-prep platform.
 Rules:
 - Answer strictly based on DSA, system design, roadmaps, core CS subjects.
 - Use simple, plain text.

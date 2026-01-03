@@ -10,6 +10,9 @@ const isProtectedRoute = createRouteMatcher([
   "/onboarding(.*)",
   "/prep(.*)",
   "/notes(.*)",
+  "/core(.*)",
+  "/roadmap(.*)",
+  "/ats(.*)",
 ]);
 
 // middleware to protect routes

@@ -8,6 +8,8 @@ import { dark } from "@clerk/themes";
 import { Analytics } from "@vercel/analytics/next"
 import ChatAssistant from "@/components/chat/ChatAssistant";
 
+
+
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -15,7 +17,11 @@ export const metadata = {
   description: "",
 };
 
+
+
 export default function RootLayout({ children }) {
+
+
   return (
     <ClerkProvider  // this was for clerk authentication
       appearance={{
@@ -40,7 +46,9 @@ export default function RootLayout({ children }) {
     </main>
 
     {/* Global Floating UI */}
-    <ChatAssistant  />
+
+    
+      <ChatAssistant />
 
     <Toaster richColors />
 
