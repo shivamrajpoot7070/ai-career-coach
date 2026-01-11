@@ -50,7 +50,7 @@ const HeroSection = () => {
         </div>
 
         <div className="flex justify-center space-x-4">
-          <Link href="/prep">
+          <Link href="/sheetprep/company">
             <Button size="lg" className="px-8 hover:scale-105 transition-transform">
               Wanna solve some problems? <span className="ml-2"><ArrowRight /></span>
             </Button>
