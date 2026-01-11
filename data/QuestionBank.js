@@ -16,12 +16,12 @@ export const QUESTION_BANK = {
     { title: "Find Minimum in Rotated Sorted Array", difficulty: "Medium", link: "https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/", notes: "Binary search" },
     { title: "Trapping Rain Water", difficulty: "Hard", link: "https://leetcode.com/problems/trapping-rain-water/", notes: "Two pointers / stack" },
     { title: "Kadane with Indices", difficulty: "Medium", link: "https://leetcode.com/problems/maximum-subarray/", notes: "Track start/end" },
-{ title: "Next Permutation", difficulty: "Medium", link: "https://leetcode.com/problems/next-permutation/", notes: "Lexicographic order" },
-{ title: "Find Duplicate Number", difficulty: "Medium", link: "https://leetcode.com/problems/find-the-duplicate-number/", notes: "Floyd cycle" },
-{ title: "Missing Number", difficulty: "Easy", link: "https://leetcode.com/problems/missing-number/", notes: "XOR trick" },
-{ title: "Sort Colors", difficulty: "Medium", link: "https://leetcode.com/problems/sort-colors/", notes: "Dutch national flag" },
-{ title: "Kth Largest Element", difficulty: "Medium", link: "https://leetcode.com/problems/kth-largest-element-in-an-array/", notes: "Quickselect" },
-{ title: "Maximum Product of Three Numbers", difficulty: "Easy", link: "https://leetcode.com/problems/maximum-product-of-three-numbers/", notes: "Negative handling" },
+   { title: "Next Permutation", difficulty: "Medium", link: "https://leetcode.com/problems/next-permutation/", notes: "Lexicographic order" },
+   { title: "Find Duplicate Number", difficulty: "Medium", link: "https://leetcode.com/problems/find-the-duplicate-number/", notes: "Floyd cycle" },
+  { title: "Missing Number", difficulty: "Easy", link: "https://leetcode.com/problems/missing-number/", notes: "XOR trick" },
+  { title: "Sort Colors", difficulty: "Medium", link: "https://leetcode.com/problems/sort-colors/", notes: "Dutch national flag" },
+  { title: "Kth Largest Element", difficulty: "Medium", link: "https://leetcode.com/problems/kth-largest-element-in-an-array/", notes: "Quickselect" },
+  { title: "Maximum Product of Three Numbers", difficulty: "Easy", link: "https://leetcode.com/problems/maximum-product-of-three-numbers/", notes: "Negative handling" },
 { title: "Subarray Product < K", difficulty: "Medium", link: "https://leetcode.com/problems/subarray-product-less-than-k/", notes: "Sliding window" },
 { title: "Find Peak Element", difficulty: "Medium", link: "https://leetcode.com/problems/find-peak-element/", notes: "Binary search" },
 { title: "Split Array Largest Sum", difficulty: "Hard", link: "https://leetcode.com/problems/split-array-largest-sum/", notes: "Binary search answer" }
@@ -259,3 +259,5 @@ Queue: [
 
 ]
 };
+
+

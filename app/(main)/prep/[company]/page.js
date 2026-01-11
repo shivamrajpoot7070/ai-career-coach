@@ -11,7 +11,21 @@ const TOPIC_SLUG_MAP = {
   Graphs: "graphs",
   HashMap: "hash-map",
   Trees: "trees",
-  Queue: "queue"
+  Queue: "queue",
+  SlidingWindow: "slidingwindow",
+  Matrix: "matrix",
+  LinkedList: "LinkedList",
+  Greedy: "Greedy",
+  Design: "Design",
+  BinarySearch: "BinarySearch",
+  Trie: "Trie",
+  Backtracking: "Backtracking",
+   Heap: "Heap",
+   Interval: "Interval",
+   Math: "Math",
+
+
+
 };
 
 export default async function CompanyPage({ params }) {

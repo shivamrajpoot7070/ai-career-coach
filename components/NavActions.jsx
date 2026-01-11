@@ -71,7 +71,7 @@ export default function NavActions() {
             Interview Prep
           </DropdownMenuItem>
 
-         <DropdownMenuItem onClick={() => navigate("/prep")}>
+         <DropdownMenuItem onClick={() => navigate("/sheetprep/company")}>
   {iconOrLoader(<ListChecks className="h-4 w-4" />)}
   Company wise sheet
 </DropdownMenuItem>

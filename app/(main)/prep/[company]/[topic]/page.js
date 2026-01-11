@@ -12,12 +12,24 @@ const TOPIC_KEY_MAP = {
   graphs: "Graphs",
   "hash-map": "HashMap",
     trees: "Trees",
-    queue: "Queue"
+    queue: "Queue",
+    "slidingwindow": "SlidingWindow",
+    matrix: "Matrix",
+    LinkedList: "LinkedList",
+    Greedy: "Greedy",
+    Design: "Design",
+    BinarySearch: "BinarySearch",
+    Trie: "Trie",
+    Backtracking: "Backtracking",
+    Heap: "Heap",
+    Interval: "Interval",
+    Math: "Math",
 };
 
 export default async function TopicPage({ params }) {
 
     const param=await params;
+    console.log(param);
 
   const { company: companySlug, topic: topicSlug } = param;
 
