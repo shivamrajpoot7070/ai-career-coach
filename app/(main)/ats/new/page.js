@@ -20,10 +20,30 @@ export default function NewATSPage() {
     try {
       const formData = new FormData(e.target);
       setStatus("Running AI-powered ATS analysis...");
+
       const res = await analyzeATS(formData);
+
+      // ⛔ RATE LIMIT HANDLING (NEW)
+      if (res?.error === "RATE_LIMIT") {
+        setError("You can only run 3 ATS checks per hour ⏳");
+        return;
+      }
+
+      // ⛔ GENERIC FAILURE
+      if (!res?.reportId) {
+        setError("Failed to analyze resume. Please try again.");
+        return;
+      }
+
+      // ✅ SUCCESS
       router.push(`/ats/${res.reportId}`);
     } catch (err) {
-      setError(err.message || "Something went wrong");
+      // ⛔ RATE LIMIT (if thrown instead of returned)
+      if (err.message === "RATE_LIMIT") {
+        setError("You can only run 3 ATS checks per hour ⏳");
+      } else {
+        setError(err.message || "Something went wrong");
+      }
     } finally {
       setLoading(false);
       setStatus("");

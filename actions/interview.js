@@ -3,6 +3,8 @@
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { generateAI } from "@/lib/gemini"; // <-- your new shared engine
+import { checkQuizRateLimit } from "@/lib/rateLimit";
+
 
 
 /* -------------------------------------------------------
@@ -12,49 +14,58 @@ export async function generateQuiz(topic) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  if (!topic || topic.trim().length < 3) {
-    throw new Error("Invalid topic");
-  }
-
-  
-  const prompt = `
-    Generate 10 technical MCQ interview questions on the topic:
-
-    "${topic}"
-
-    Difficulty: Medium (interview level)
-
-    Format STRICT JSON:
-    {
-      "questions": [
-        {
-          "question": "",
-          "options": ["", "", "", ""],
-          "correctAnswer": "",
-          "explanation": ""
-        }
-      ]
-    }
-
-    Rules:
-    - Options must be realistic
-    - correctAnswer must exactly match one option
-    - Explanation should be 1–2 lines only
-
-    Return ONLY valid JSON.
-  `;
+  const user = await db.user.findUnique({
+    where: { clerkUserId: userId }
+  });
+  if (!user) throw new Error("User not found");
 
   try {
+    // ⛔ may throw RATE_LIMIT
+    await checkQuizRateLimit(user.id);
+
+    if (!topic || topic.trim().length < 3) {
+      throw new Error("Invalid topic");
+    }
+
+    const prompt = `
+      Generate 10 technical MCQ interview questions on the topic:
+      "${topic}"
+      Difficulty: Medium (interview level)
+      Format STRICT JSON:
+      {
+        "questions": [
+          {
+            "question": "",
+            "options": ["", "", "", ""],
+            "correctAnswer": "",
+            "explanation": ""
+          }
+        ]
+      }
+      Rules:
+      - Options must be realistic
+      - correctAnswer must exactly match one option
+      - Explanation should be 1–2 lines only
+      Return ONLY valid JSON.
+    `;
+
     const raw = await generateAI(prompt);
     const cleaned = raw.replace(/```json|```/g, "").trim();
     const quiz = JSON.parse(cleaned);
 
     return quiz.questions;
-  } catch (err) {
+
+  } 
+ catch (err) {
+    if (err.code === "RATE_LIMIT") {
+      return { error: "RATE_LIMIT" };
+    }
+
     console.error("Quiz generation failed:", err);
-    throw new Error("Failed to generate quiz");
+    return { error: "FAILED" };
   }
 }
+
 
 /* -------------------------------------------------------
    2) Save Quiz Result + Improvement Tip (Uses generateAI)

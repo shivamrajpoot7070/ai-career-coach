@@ -23,19 +23,14 @@ export default function Quiz() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [showExplanation, setShowExplanation] = useState(false);
+  const [isWaitingForQuiz, setIsWaitingForQuiz] = useState(false); // NEW
 
-  /* ---------------------------
-     Generate Quiz Hook
-  ---------------------------- */
   const {
     loading: generatingQuiz,
     fn: generateQuizFn,
     data: quizData,
   } = useFetch(generateQuiz);
 
-  /* ---------------------------
-     Save Result Hook
-  ---------------------------- */
   const {
     loading: savingResult,
     fn: saveQuizResultFn,
@@ -43,31 +38,31 @@ export default function Quiz() {
     setData: setResultData,
   } = useFetch(saveQuizResult);
 
-  /* ---------------------------
-     Initialize answers after quiz data is loaded
-  ---------------------------- */
-
-  // schema of quizData is array of question objects
-//   {
-//   "question": "What is closure in JavaScript?",
-//   "options": ["A", "B", "C", "D"],
-//   "correctAnswer": "C",
-//   "explanation": "Explanation here"
-// }
+  const questions = Array.isArray(quizData)
+    ? quizData
+    : Array.isArray(quizData?.questions)
+    ? quizData.questions
+    : null;
 
   useEffect(() => {
-    if (quizData) {
-      setAnswers(new Array(quizData.length).fill(null));
+    if (quizData?.error === "RATE_LIMIT") {
+      toast.error("You can only generate 3 quizzes per hour ⏳");
+      setQuizStarted(false);
+      setIsWaitingForQuiz(false); // NEW
+      return;
     }
-  }, [quizData]);
 
-  /* ---------------------------
-     Topic Form (FIRST SCREEN)
-  ---------------------------- */
+    if (questions?.length) {
+      setAnswers(new Array(questions.length).fill(null));
+      setQuizStarted(true);
+      setIsWaitingForQuiz(false); // NEW
+    }
+  }, [quizData, questions]);
 
-  if (!quizStarted && !quizData) {
+  /* FIRST SCREEN */
+  if (!quizStarted && !questions && !isWaitingForQuiz) {
     return (
-      <Card className="max-2 max-w-xl mx-auto">
+      <Card className="max-w-xl mx-auto">
         <CardHeader>
           <CardTitle>Start Practice Quiz</CardTitle>
         </CardHeader>
@@ -75,10 +70,6 @@ export default function Quiz() {
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Enter a topic you want to practice.
-            <br />
-            <span className="italic">
-              Example: Binary Trees, React Hooks, Dynamic Programming
-            </span>
           </p>
 
           <input
@@ -86,10 +77,7 @@ export default function Quiz() {
             placeholder="Enter topic..."
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
-            className="
-              w-full border rounded-md px-3 py-2
-              focus:outline-none focus:ring-2 focus:ring-primary/40
-            "
+            className="w-full border rounded-md px-3 py-2"
           />
         </CardContent>
 
@@ -97,9 +85,9 @@ export default function Quiz() {
           <Button
             className="w-full"
             disabled={topic.trim().length < 3 || generatingQuiz}
-            onClick={() => {
-              generateQuizFn(topic);
-              setQuizStarted(true);
+            onClick={async () => {
+              setIsWaitingForQuiz(true); // NEW
+              await generateQuizFn(topic);
             }}
           >
             Start Quiz
@@ -109,38 +97,33 @@ export default function Quiz() {
     );
   }
 
-  /* ---------------------------
-     Loading Quiz
-  ---------------------------- */
-  if (generatingQuiz) {
-    return <BarLoader className="mt-4" width="100%" color="gray" />;
-  }
-
-  /* ---------------------------
-     Quiz Result
-  ---------------------------- */
-
-  if (resultData) {
+  /* GENERATING QUIZ LOADER */
+  if (isWaitingForQuiz || generatingQuiz) {
     return (
-      <div className="mx-2">
-        <QuizResult
-          result={resultData}
-          onStartNew={() => {
-            setTopic("");
-            setQuizStarted(false);
-            setCurrentQuestion(0);
-            setAnswers([]);
-            setShowExplanation(false);
-            setResultData(null);
-          }}
-        />
+      <div className="flex flex-col items-center justify-center py-16">
+        <BarLoader width={200} color="gray" />
+        <p className="mt-4 text-lg text-muted-foreground">
+          Generating your quiz...
+        </p>
       </div>
     );
   }
 
-  /* ---------------------------
-     Saving Result Loader
-  ---------------------------- */
+  if (resultData) {
+    return (
+      <QuizResult
+        result={resultData}
+        onStartNew={() => {
+          setTopic("");
+          setQuizStarted(false);
+          setCurrentQuestion(0);
+          setAnswers([]);
+          setShowExplanation(false);
+          setResultData(null);
+        }}
+      />
+    );
+  }
 
   if (savingResult) {
     return (
@@ -153,107 +136,66 @@ export default function Quiz() {
     );
   }
 
-  /* ---------------------------
-     Quiz Logic
-  ---------------------------- */
-  // quiz schema is array of questions with question, options, correctAnswer, explanation
+  if (!questions || !questions.length) return null;
 
-  const question = quizData[currentQuestion]; // current question object
+  const question = questions[currentQuestion];
 
   const handleAnswer = (answer) => {
     const newAnswers = [...answers];
-    newAnswers[currentQuestion] = answer; // set answer for current question answers = [null, null, "B", null, ...]
+    newAnswers[currentQuestion] = answer;
     setAnswers(newAnswers);
   };
 
   const calculateScore = () => {
     let correct = 0;
     answers.forEach((answer, idx) => {
-      // this will compare user answer with correct answer both are indexed similarly
-      if (answer === quizData[idx].correctAnswer) correct++;
+      if (answer === questions[idx].correctAnswer) correct++;
     });
-    return (correct / quizData.length) * 100;
+    return (correct / questions.length) * 100;
   };
 
   const finishQuiz = async () => {
     const score = calculateScore();
-    try {
-      await saveQuizResultFn(quizData, answers, score);
-      toast.success("Quiz completed!");
-    } catch (err) {
-      toast.error("Failed to save quiz result");
-    }
+    await saveQuizResultFn(questions, answers, score);
+    toast.success("Quiz completed!");
   };
 
   const handleNext = () => {
-    if (currentQuestion < quizData.length - 1) {
+    if (currentQuestion < questions.length - 1) {
       setCurrentQuestion((q) => q + 1);
       setShowExplanation(false);
-    } 
-    else {
+    } else {
       finishQuiz();
     }
   };
 
-  /* ---------------------------
-     Quiz UI
-  ---------------------------- */
   return (
     <Card className="mx-2">
       <CardHeader>
         <CardTitle>
-          Question {currentQuestion + 1} of {quizData.length}
+          Question {currentQuestion + 1} of {questions.length}
         </CardTitle>
-        <p className="text-sm text-muted-foreground mt-1">
-          Topic: <strong>{topic}</strong>
-        </p>
       </CardHeader>
 
-      <CardContent className="space-y-4">
-        {/* // use question object to show question and options */}
-
-        <p className="text-lg font-medium">{question.question}</p>  
+      <CardContent>
+        <p className="text-lg font-medium">{question.question}</p>
 
         <RadioGroup
           value={answers[currentQuestion]}
           onValueChange={handleAnswer}
-          className="space-y-2"
         >
-          {question.options.map((option, index) => ( // each option for the question  
+          {question.options.map((option, index) => (
             <div key={index} className="flex items-center space-x-2">
-              <RadioGroupItem value={option} id={`opt-${index}`} />
-              <Label htmlFor={`opt-${index}`}>{option}</Label>
+              <RadioGroupItem value={option} />
+              <Label>{option}</Label>
             </div>
           ))}
         </RadioGroup>
-
-        {showExplanation && (
-          <div className="mt-4 p-4 bg-muted rounded-lg">
-            <p className="font-medium">Explanation</p>
-            <p className="text-muted-foreground">
-              {question.explanation}
-            </p>
-          </div>
-        )}
       </CardContent>
 
       <CardFooter className="flex justify-between">
-        {!showExplanation && (
-          <Button
-            variant="outline"
-            onClick={() => setShowExplanation(true)}
-            disabled={!answers[currentQuestion]}
-          >
-            Show Explanation
-          </Button>
-        )}
-
-        <Button
-          onClick={handleNext}
-          disabled={!answers[currentQuestion]}
-          className="ml-auto"
-        >
-          {currentQuestion < quizData.length - 1
+        <Button onClick={handleNext} disabled={!answers[currentQuestion]}>
+          {currentQuestion < questions.length - 1
             ? "Next Question"
             : "Finish Quiz"}
         </Button>

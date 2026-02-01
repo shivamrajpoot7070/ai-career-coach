@@ -5,16 +5,29 @@ import { extractTextFromPDF } from "@/lib/ocr";
 import { extractSkills } from "@/lib/rescontent/extractSkills";
 import { extractProjects } from "@/lib/rescontent/extractProjects";
 import { aiEvaluateATS } from "@/lib/rescontent/aiAtsEvaluator";
+import { checkATSRateLimit } from "@/lib/rateLimit";
 
 
 export async function analyzeATS(formData) {
+
   const { userId: clerkUserId } = await auth();
   if (!clerkUserId) throw new Error("Unauthorized");
 
   const user = await db.user.findUnique({
     where: { clerkUserId },
   });
+
   if (!user) throw new Error("User not found");
+
+  try {
+    await checkATSRateLimit(user.id);
+  } 
+  catch (err) {
+    if (err.code === "RATE_LIMIT") {
+      return { error: "RATE_LIMIT" };
+    }
+    throw err;
+  }
 
   const resumeFile = formData.get("resume");
   const jdText = formData.get("jdText") || "";
